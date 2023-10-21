@@ -1,0 +1,121 @@
+Calculator Code (java Object) (written in java) will be updated to be more readable and more features will be added (does not support parenthesis yet)
+
+import java.util.*;
+
+public class Calculator {
+
+    private final static String OPEN = "({[";
+    private final static String CLOSE = ")}]";
+    private final static String OPERATORS = "+-/*;";
+
+    public static String postfix(String input) {
+        ArrayStack<Character> operatorStack = new ArrayStack<>();
+        StringBuilder result = new StringBuilder();
+        char tempOperatorHolder = ' ';
+        int i = 0;
+        try {
+            while (i < input.length()) {
+                char nextChar = input.charAt(i);  //if operands precedence is higher then just pop onto stack
+                if (OPERATORS.indexOf(nextChar) != -1) { //if operand precedence is less then the one on stack pop the higher precedence on off the stack and onto the string.
+                    //if operand precedence is equal pop off stack add to string than push onto stack.
+                    while (operatorStack.isEmpty() || precedence(nextChar, tempOperatorHolder) > 0) {
+                            tempOperatorHolder=operatorStack.pop();
+                            result.append(tempOperatorHolder);
+                    }
+                    operatorStack.push(nextChar);
+                } else {
+                    result.append(nextChar);
+                }
+                i++;
+            }
+        } catch (Exception E) {
+            throw new IllegalArgumentException("invalid expression");
+        }
+        while (!operatorStack.isEmpty()) {
+            result.append(operatorStack.pop());
+        }
+        return result.toString();
+    }
+
+    public static double calculate(String input) {
+        String postfixExpression = postfix(input);
+        ArrayStack<Double> evaluator = new ArrayStack<>();
+        int i = 0;
+        while (i < postfixExpression.length()) {
+            String nextChar = postfixExpression.charAt(i) + "";
+            if (OPERATORS.indexOf(nextChar) == -1) {
+                evaluator.push(Double.parseDouble(nextChar));
+            } else {
+                double rhs = evaluator.pop();
+                double lhs = evaluator.pop();
+                double result = 0;
+                switch (nextChar) {
+                    case "+":
+                        result = lhs + rhs;
+                        break;
+                    case "-":
+                        result = lhs - rhs;
+                        break;
+                    case "/":
+                        result = lhs / rhs;
+                        break;
+                    case "*":
+                        result = lhs * rhs;
+                        break;
+                    default:
+                        System.out.println("Error in switch");
+                }
+                evaluator.push(result);
+            }
+            i++;
+        }
+
+        return evaluator.pop();
+    }
+
+    public static int precedence(char nextChar, char charOnStack) {
+        if ((OPERATORS.indexOf(nextChar) > 1 && OPERATORS.indexOf(charOnStack) > 1) || (OPERATORS.indexOf(nextChar) < 2 && OPERATORS.indexOf(charOnStack) < 2)) {
+            return 0;
+        } else if (OPERATORS.indexOf(nextChar) < 2 && OPERATORS.indexOf(charOnStack) > 1) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
+    public static double calculatePostFix(String input) {
+        Scanner scan = new Scanner(input);
+        ArrayStack<Double> evaluator = new ArrayStack<>();
+        int i = 0;
+        while (scan.hasNext()) {
+            String nextChar = scan.next();
+            if (OPERATORS.indexOf(nextChar) == -1) {
+                evaluator.push(Double.parseDouble(nextChar));
+            } else {
+                double lhs = evaluator.pop();
+                double rhs = evaluator.pop();
+                double result = 0;
+                switch (nextChar) {
+                    case "+":
+                        result = rhs + lhs;
+                        break;
+                    case "-":
+                        result = rhs - lhs;
+                        break;
+                    case "/":
+                        result = rhs / lhs;
+                        break;
+                    case "*":
+                        result = rhs * lhs;
+                        break;
+                    default:
+                        System.out.println("Error in switch");
+                }
+                evaluator.push(result);
+            }
+            i++;
+        }
+
+        return evaluator.pop();
+    }
+}
